@@ -5,10 +5,23 @@ body {
   padding: 0;
 }
 
+.header{
+  display: flex;
+  flex-direction: row;
+  max-width: 800px;
+  margin: 0px auto;
+}
+
 h1 {
   text-align: center;
   color: #007bff;
+  margin: 40px auto;
+}
+
+.logOut{
   margin-top: 40px;
+  margin-bottom: 40px;
+  right: 10%;
 }
 
 .submitted {
@@ -24,7 +37,7 @@ h1 {
 
 .formcard {
   max-width: 800px;
-  margin: 20px auto;
+  margin: 10px auto;
   padding: 20px;
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -149,9 +162,9 @@ button:hover {
   .info {
     text-align: center;
   }
-body{
-  background-color: #fff;
-}
+  body{
+    background-color: #fff;
+  }
   .form-group input {
     width: calc(100% - 20px);
   }

@@ -202,9 +202,19 @@ function Main({regNo, setRegNo, dob, setDob, isAuth, setIsAuth, stdName, setStdN
     setResponses([]);
   }
 
+  const handleLogOut = () => {
+    localStorage.removeItem('studentId');
+    setIsAuth(false);
+    localStorage.removeItem('isAuth');
+    setRegNo("");
+    setDob("");
+  }
   return (
     <div>
+      <div className="header">
       <h1 className="topic">Evaluation Form</h1>
+      <button onClick={handleLogOut} className="logOut">Log Out</button>
+      </div>
       {updated ? (
         <div className='submitted'>
           <FontAwesomeIcon icon={faCheckCircle} beatFade size="lg" />

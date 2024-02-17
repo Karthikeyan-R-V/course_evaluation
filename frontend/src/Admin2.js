@@ -2,12 +2,12 @@ import React, { useEffect, useState } from "react";
 import './Main.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { url } from './url';
-import { Table,Spin } from 'antd';
-// import 'antd/dist/antd.css';
+import { Table, Spin } from 'antd';
 
 const Admin2 = () => {
     const [std, setStd] = useState([]);
-    const [loading,setLoading] = useState(true);
+    const [loading, setLoading] = useState(true);
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -24,7 +24,7 @@ const Admin2 = () => {
                         return {
                             RegNo: student.RegNo,
                             Name: student.StdName,
-                            CoursesSubmitted: courses
+                            CoursesSubmitted: courses.length // Render the length of the courses array
                         };
                     })
                 );
@@ -54,17 +54,17 @@ const Admin2 = () => {
             title: 'Number of Courses Submitted',
             dataIndex: 'CoursesSubmitted',
             key: 'CoursesSubmitted',
-            render: (text) => <div>{text}</div>,
         },
     ];
 
     return (
         <>
-        <h3>Feedback submission</h3>
-        {
-            loading ? (<div id="spin"><Spin size="large"></Spin></div>) : (
-            <Table dataSource={std} columns={columns} />)
-        }
+            <h3>Feedback submission</h3>
+            {
+                loading ? (<div id="spin"><Spin size="large"></Spin></div>) : (
+                    <Table dataSource={std} columns={columns}/>
+                )
+            }
         </>
     );
 };

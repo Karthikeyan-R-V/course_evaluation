@@ -10,7 +10,7 @@
 h3{
     text-align: center;
     color: rgb(93, 42, 165);
-    margin: 5px;
+    margin: 20px;
 }
 
 .table{
@@ -20,4 +20,66 @@ h3{
 #spin{
     padding: 20px;
     text-align: center;
+}
+
+#footer{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+#designation{
+    font-size: 20px;
+    font-weight: 700;
+    padding: 10px;
+}
+
+#studentId{
+    width: 30%;
+    padding: 10px;
+}
+
+label{
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.courseCode{
+    width: 500px;
+    margin: 20px;
+}
+
+#admin-form{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+}
+
+#stdData{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+#stdData__span{
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+#responses{
+    padding: 15px;
+}
+
+@media only screen and (max-width: 600px) {
+    .courseCode{
+        width: 75%;
+        margin: 20px;
+    }
+    #admin-form{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
 }

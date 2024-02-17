@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import Auth from './Auth';
 import Main from './Main';
 import Admin from './Admin';
+import Admin1 from './Admin1';
 import Admin2 from './Admin2';
 
 const App = () => {
@@ -34,6 +35,10 @@ const App = () => {
         <Route
           path='/admin1'
           element={<Admin2/>}
+        />
+        <Route
+          path='/admin2'
+          element={<Admin1/>}
         />
       </Routes>
     </Router>

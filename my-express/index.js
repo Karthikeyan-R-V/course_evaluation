@@ -5,7 +5,7 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 
 const app = express();
-const port = 3001;
+const port = 4000;
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -73,9 +73,22 @@ const studentSchema = new mongoose.Schema({
   },
 });
 
+const questionschema = new mongoose.Schema({
+  qid: Number,
+  question: String
+})
+
+const courseListSchema = new mongoose.Schema({
+  coursecode: String,
+  coursename: String,
+  questions: [questionschema]
+});
+
+
 
 const Student = mongoose.model('Student', studentSchema);
 const StudentIDModel = mongoose.model('nameList', nameList);
+const coursesModel = mongoose.model('courselist', courseListSchema);
 app.post('/api/studentID', async (req, res) => {
   const studentAuth = req.body;
   console.log(studentAuth);
@@ -225,6 +238,26 @@ app.get('/api/students/:sub', async (req, res) => {
   } catch (err) {
     console.log(err);
   }
+})
+
+app.post('/api/admin/responsedata', async(req,res) => {
+  const { studentId, courseCode } = req.body;
+  console.log(studentId, courseCode);
+    try{
+      const data = await Student.find({stdId: studentId, courseId: courseCode});
+      console.log(data);
+      res.send(data[0]);
+}catch(err){console.log(err);}
+})
+
+app.get('/api/admin/courses', async(req,res) => {
+  try{
+    const data = await coursesModel.find({},{coursename:1,coursecode:1});
+    console.log(data);
+    res.send(data);
+}catch(err){
+console.log(err);
+}
 })
 
 app.get('/api/student/admin/:std', async(req,res) => {
