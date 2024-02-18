@@ -5,7 +5,7 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 
 const app = express();
-const port = 4000;
+const port = 3500;
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -28,10 +28,52 @@ const nameList = new mongoose.Schema({
   DOB: String
 });
 
+const questionschema = new mongoose.Schema({
+    qid: Number,
+    question: String
+})
+
 const responseSchema = new mongoose.Schema({
   qid: Number,
   question: String,
   response: String,
+});
+
+const courseListSchema = new mongoose.Schema({
+  coursecode: String,
+  coursename: String,
+  questions: [questionschema]
+});
+
+const studentSchema1 = new mongoose.Schema({
+  stdName: {
+    type: String,
+    required: true,
+  },
+  stdId: {
+    type: String,
+    required: true,
+  },
+  email: {
+    type: String,
+    required: true,
+  },
+  phNo: {
+    type: String,
+    required: true,
+  },
+  sem: {
+    type: String,
+    required: true,
+  },
+  year: {
+    type: String,
+    required: true,
+  },
+  courselist:{
+    type: Object,
+    required: true,
+  },
 });
 
 const studentSchema = new mongoose.Schema({
@@ -64,7 +106,7 @@ const studentSchema = new mongoose.Schema({
     required: true,
   },
   year: {
-    type: Number,
+    type: String,
     required: true,
   },
   responses: {
@@ -73,22 +115,11 @@ const studentSchema = new mongoose.Schema({
   },
 });
 
-const questionschema = new mongoose.Schema({
-  qid: Number,
-  question: String
-})
-
-const courseListSchema = new mongoose.Schema({
-  coursecode: String,
-  coursename: String,
-  questions: [questionschema]
-});
-
-
-
-const Student = mongoose.model('Student', studentSchema);
-const StudentIDModel = mongoose.model('nameList', nameList);
-const coursesModel = mongoose.model('courselist', courseListSchema);
+const Student1 = mongoose.model('IIIyrstudent',studentSchema1);
+const StudentIDModel = mongoose.model('IIIyrnameList', nameList);
+const coursesModel = mongoose.model('IIIyrcourselist', courseListSchema);
+const responseModel = mongoose.model('IIIyrresponse_feedback',studentSchema);
+//forLogin checking
 app.post('/api/studentID', async (req, res) => {
   const studentAuth = req.body;
   console.log(studentAuth);
@@ -108,13 +139,13 @@ app.post('/api/studentID', async (req, res) => {
   }
 });
 
-
+//for auto data entry of Students from students collection
 app.get('/api/student/:id', async (req, res) => {
   const studentId = req.params.id;
   console.log(studentId);
   try {
-    const studentData = await Student.findOne({ stdId: studentId });
-    //console.log(studentData);
+    const studentData = await Student1.findOne({ stdId: studentId });
+    console.log(studentData);
     if (studentData) {
       res.json(studentData);
     }
@@ -128,13 +159,15 @@ app.get('/api/student/:id', async (req, res) => {
 });
 
 
+
+//form submission to coursesurvey
 app.post('/api/submit-form', async (req, res) => {
   const formData = req.body;
   console.log(formData);
 
   try {
     console.log(formData.courseId);
-    const newStudent = new Student({
+    const newStudent = new responseModel({
       stdName: formData.stdName,
       stdId: formData.regNo,
       email: formData.email,
@@ -145,7 +178,7 @@ app.post('/api/submit-form', async (req, res) => {
       year: formData.year,
       responses: formData.responses,
     });
-    const duplicateEntry = await Student.countDocuments({ stdId: formData.regNo, courseName: formData.courseName });
+    const duplicateEntry = await responseModel.countDocuments({ stdId: formData.regNo, courseName: formData.courseName });
     if (duplicateEntry !== 0) {
       res.json("Duplicate Entry");
       console.log(duplicateEntry);
@@ -163,6 +196,18 @@ app.post('/api/submit-form', async (req, res) => {
   }
 });
 
+//admin page course list
+app.get('/api/admin/courses', async(req,res) => {
+    try{
+      const data = await coursesModel.find({},{coursename:1,coursecode:1});
+      console.log(data);
+      res.send(data);
+}catch(err){
+  console.log(err);
+}
+})
+
+//admin data
 app.post('/api/dashboard', async (req, res) => {
   const reqData = req.body;
 
@@ -188,7 +233,7 @@ app.post('/api/dashboard', async (req, res) => {
       { $unwind: "$responses" },
       {
         $match: {
-          "courseName": reqData.sub,
+          "courseName": reqData.coursecode,
           "responses.qid": { $gte: lowerBound, $lte: upperBound }
         }
       },
@@ -219,7 +264,7 @@ app.post('/api/dashboard', async (req, res) => {
       }
     ];
 
-    const result = await Student.aggregate(aggregationPipeline);
+    const result = await responseModel.aggregate(aggregationPipeline);
     console.log(result);
     res.json(result);
   } catch (err) {
@@ -228,11 +273,23 @@ app.post('/api/dashboard', async (req, res) => {
   }
 });
 
+
+//for proof
+app.post('/api/admin/responsedata', async(req,res) => {
+  const { studentId, courseCode } = req.body;
+  console.log(studentId, courseCode);
+    try{
+      const data = await responseModel.findOne({stdId: studentId, courseName: courseCode});
+      console.log(data);
+      res.send(data);
+}catch(err){console.log(err);}
+})
+//for counting no of submissions for each course
 app.get('/api/students/:sub', async (req, res) => {
   const subject = req.params.sub;
   console.log(subject);
   try {
-    const stdCount = await Student.countDocuments({ courseName: subject });
+    const stdCount = await responseModel.countDocuments({ courseName: subject });
     console.log(stdCount);
     res.json(stdCount);
   } catch (err) {
@@ -240,38 +297,19 @@ app.get('/api/students/:sub', async (req, res) => {
   }
 })
 
-app.post('/api/admin/responsedata', async(req,res) => {
-  const { studentId, courseCode } = req.body;
-  console.log(studentId, courseCode);
-    try{
-      const data = await Student.find({stdId: studentId, courseId: courseCode});
-      console.log(data);
-      res.send(data[0]);
-}catch(err){console.log(err);}
-})
-
-app.get('/api/admin/courses', async(req,res) => {
-  try{
-    const data = await coursesModel.find({},{coursename:1,coursecode:1});
-    console.log(data);
-    res.send(data);
-}catch(err){
-console.log(err);
-}
-})
-
+//for counting no of courses each student submitted
 app.get('/api/student/admin/:std', async(req,res) => {
   const student = req.params.std;
   console.log(student);
   try{
-    const resCount = await Student.countDocuments({stdName: student});
+    const resCount = await responseModel.countDocuments({stdId: student});
     console.log(resCount);
     res.json(resCount);
   }catch(err){
     console.log(err);
   }
 })
-
+//for getting student list
 app.get('/api/studentList', async(req,res) => {
   const stdList = await StudentIDModel.find();
   console.log(stdList);

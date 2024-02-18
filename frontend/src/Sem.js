@@ -31,6 +31,8 @@ function Sem({ sem, setSem, year, setYear }) {
           >
             <option value="III">III</option>
             <option value="IV">IV</option>
+            <option value="V">V</option>
+            <option value="VI">VI</option>
           </select>
         </div>
       </div>

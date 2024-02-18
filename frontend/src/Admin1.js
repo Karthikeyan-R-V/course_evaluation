@@ -10,7 +10,8 @@ const Admin2 = () => {
     const [courseCode, setCourseCode] = useState('');
     const [response, setResponse] = useState([]);
     const [courses, setCourses] = useState([]);
-    const [stdName,setStdName] = useState("");
+    const [stdName, setStdName] = useState('');
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         const fetchCourses = async () => {
@@ -23,6 +24,7 @@ const Admin2 = () => {
                 setCourses(data);
             } catch (error) {
                 console.error('Error fetching courses:', error);
+                notification.error({ message: 'Error', description: error.message });
             }
         };
         fetchCourses();
@@ -30,6 +32,8 @@ const Admin2 = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
+        
         try {
             const formData = { studentId, courseCode };
             const res = await fetch(`${url}/admin/responsedata`, {
@@ -40,20 +44,18 @@ const Admin2 = () => {
                 body: JSON.stringify(formData)
             });
             if (!res.ok) {
-                throw new Error('Failed to fetch response');
+                throw new Error('Failed to fetch response data');
             }
+
             const data = await res.json();
             setStdName(data.stdName);
             setResponse(data.responses);
         } catch (error) {
-            console.error('Error fetching response:', error);
+            console.error('Error fetching response data:', error);
+            notification.error({ message: 'Not Found', description: "Response not found" });
             setResponse([]);
-            notification.info({
-                message: 'No response Found',
-                description: `No response found with student ID ${studentId}`,
-            });
-            setStudentId("");
-            setStdName("");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -88,10 +90,10 @@ const Admin2 = () => {
                 >
                     <Option value="">Select Course</Option>
                     {courses.map(course => (
-                        <Option key={course.coursecode} value={course.coursecode} id="courseOption">{course.coursename}</Option>
+                        <Option key={course.coursecode} value={course.coursecode}>{course.coursename}</Option>
                     ))}
                 </Select>
-                <Button type="primary" htmlType="submit">Submit</Button>
+                <Button type="primary" htmlType="submit" loading={loading}>Submit</Button>
             </form>
             {response.length > 0 && (
                 <div id='responses'>
@@ -99,7 +101,7 @@ const Admin2 = () => {
                       <p><span id='stdData__span'>Student Name :</span> {stdName}</p>
                       <p><span id='stdData__span'>Register Number :</span> {studentId}</p>
                     </div>
-                    <Table dataSource={response} columns={columns}  pagination={false} />
+                    <Table dataSource={response} columns={columns} pagination={false} />
                 </div>
             )}
         </div>

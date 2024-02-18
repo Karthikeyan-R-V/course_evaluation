@@ -17,14 +17,14 @@ const Admin2 = () => {
 
                 const studentsWithCourses = await Promise.all(
                     stdList.map(async (student) => {
-                        const res = await fetch(`${url}/student/admin/${student.StdName}`);
+                        const res = await fetch(`${url}/student/admin/${student.RegNo}`);
                         const courses = await res.json();
                         console.log(courses);
 
                         return {
                             RegNo: student.RegNo,
                             Name: student.StdName,
-                            CoursesSubmitted: courses.length // Render the length of the courses array
+                            CoursesSubmitted: courses
                         };
                     })
                 );
@@ -62,7 +62,7 @@ const Admin2 = () => {
             <h3>Feedback submission</h3>
             {
                 loading ? (<div id="spin"><Spin size="large"></Spin></div>) : (
-                    <Table dataSource={std} columns={columns}/>
+                    <Table dataSource={std} columns={columns} />
                 )
             }
         </>

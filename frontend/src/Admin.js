@@ -5,21 +5,21 @@ import './Admin.css';
 import { url } from './url';
 
 const Admin = () => {
-    const subjects = ["Probability,Statistics and Queuing Theory", "Digital Systems", "Discrete Structures", "Data Structures", "Foundations of Data Science", "Object Oriented Programming", "Engineering Exploration", "Digital Systems Laboratory", "Data Structures Laboratory"];
     const categories = ["Planning and organization", "Presentation and Communication", "Student participation", "Class Management"];
 
     const [loading, setLoading] = useState(true);
     const [marks, setMarks] = useState({});
     const [no, setNo] = useState({});
+    const [courses, setCourses] = useState([]);
 
-    const fetchCourseMark = async (sub, category) => {
+    const fetchCourseMark = async (coursecode, category) => {
         try {
             const response = await fetch(`${url}/dashboard`, {
                 method: 'POST',
                 headers: {
                     'Content-type': 'application/json',
                 },
-                body: JSON.stringify({ sub, category }),
+                body: JSON.stringify({ coursecode, category }),
             });
             const data = await response.json();
 
@@ -34,12 +34,11 @@ const Admin = () => {
         }
     };
 
-    const fetchStdCount = async (sub) => {
+    const fetchStdCount = async (coursecode) => {
         try {
-            const response = await fetch(`${url}/students/${sub}`);
+            const response = await fetch(`${url}/students/${coursecode}`);
             const data = await response.json();
-            console.log(data);
-            return data;
+            return data; 
         } catch (err) {
             console.error(err);
             return 0;
@@ -47,60 +46,68 @@ const Admin = () => {
     };
 
     useEffect(() => {
+        const fetchCourseData = async () => {
+            try {
+                const res = await fetch(`${url}/admin/courses`);
+                if (!res.ok) {
+                    throw new Error('Failed to fetch courses');
+                }
+                const data = await res.json();
+                console.log(data);
+                setCourses(data);
+            } catch (error) {
+                console.error('Error fetching courses:', error);
+            }
+        };
+        fetchCourseData();
+    }, []);
+
+    useEffect(() => {
         const fetchData = async () => {
             const marksData = {};
-            for (const subject of subjects) {
+            const stdCountData = {};
+            for (const course of courses) {
+                stdCountData[course.coursecode] = await fetchStdCount(course.coursecode);
                 for (const category of categories) {
-                    const key = `${subject}-${category}`;
-                    marksData[key] = await fetchCourseMark(subject, category);
+                    const key = `${course.coursecode}-${category}`;
+                    marksData[key] = await fetchCourseMark(course.coursecode, category);
                 }
             }
             console.log(marksData);
+            console.log(stdCountData);
             setMarks(marksData);
+            setNo(stdCountData);
             setLoading(false);
         };
 
-        const fetchStdCountData = async () => {
-            const stdCount = {};
-            for (const subject of subjects) {
-                stdCount[subject] = await fetchStdCount(subject);
-                console.log(stdCount[subject]);
-            }
-            console.log(stdCount);
-            setNo(stdCount);
-        };
-
         fetchData();
-        fetchStdCountData();
-    }, []);
+    }, [courses]);
 
-    const totRes = (sub) => {
+    const totRes = (coursecode) => {
         let tot = 0;
         for (const category of categories) {
-            const key = `${sub}-${category}`;
-            tot += marks[key];
+            const key = `${coursecode}-${category}`;
+            tot += marks[key] || 0; // Ensure to handle undefined marks
         }
         return tot;
     };
 
-    const average = (sub) => {
-        if (no[sub] === 0 || isNaN(no[sub])) return 0;
-        return Math.round(totRes(sub) / no[sub]);
+    const average = (coursecode) => {
+        if (!no[coursecode] || isNaN(no[coursecode])) return 0; // Handle cases where no data is available or data is not a number
+        return Math.round(totRes(coursecode) / no[coursecode]);
     };
 
     const columns = [
         {
-            title: 'Course Name',
-            dataIndex: 'course',
-            key: 'course',
+            title: 'Course Code',
+            dataIndex: 'coursecode',
+            key: 'coursecode',
         },
-        ...categories.flatMap(category => ([
-            {
-                title: `${category}`,
-                dataIndex: `${category}Total`,
-                key: `${category}Total`,
-            },
-        ])),
+        ...categories.map(category => ({
+            title: category,
+            dataIndex: category,
+            key: category,
+        })),
         {
             title: 'Total Students',
             dataIndex: 'totalStudents',
@@ -118,27 +125,27 @@ const Admin = () => {
         },
     ];
 
-    const data = subjects.map((subject) => {
-        const row = {
-            key: subject,
-            course: subject,
-            totalStudents: no[subject],
-            total: totRes(subject),
-            overallAvg: average(subject),
-        };
+    const data = courses.map(course => ({
+        key: course.coursecode,
+        coursecode: course.coursename, // Assuming the property is courseName, change it accordingly if it's different
+        totalStudents: no[course.coursecode],
+        total: totRes(course.coursecode),
+        overallAvg: average(course.coursecode),
+        ...Object.fromEntries(categories.map(category => [category, marks[`${course.coursecode}-${category}`]]))
+    }));
 
-        categories.forEach((category) => {
-            const key = `${subject}-${category}`;
-            row[`${category}Total`] = marks[key];
-        });
-
-        return row;
-    });
     return (
         <>
             <h3>Course Feedback Summary</h3>
             { loading ? (<div id="spin"><Spin size="large" /></div>) :
-            (<Table dataSource={data} columns={columns} />)}
+            (<div>
+                <Table dataSource={data} columns={columns} pagination={false}/>
+                <div id="footer">
+                    <div id="designation">Faculty Advisor</div>
+                    <div id="designation">Course Coordinator</div>
+                    <div id="designation">Head Of the Department</div>
+                </div>
+            </div>)}
         </>
     );
 };

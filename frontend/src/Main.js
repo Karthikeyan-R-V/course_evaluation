@@ -14,36 +14,15 @@ function Main({regNo, setRegNo, dob, setDob, isAuth, setIsAuth, stdName, setStdN
   const [responses, setResponses] = useState([]);
   const [courseName, setCourseName] = useState("");
   const [courseId, setCourseId] = useState("");
-  const [sem, setSem] = useState('III');
-  const [year, setYear] = useState(2);
+  const [sem, setSem] = useState('V');
+  const [year, setYear] = useState('III');
   const [email, setEmail] = useState("");
   const [phNo, setPhNo] = useState("");
   const [duplicate, setDuplicate] = useState(false);
   const [ret,setRet] = useState(false);
+  const [courses,setCourses] = useState([]);
 
-  const courses = {
-    'Probability,Statistics and Queuing Theory': '22SPC308',
-    'Digital Systems': '22SES306',
-    'Discrete Structures': '22SES307',
-    'Data Structures': '22SPC301',
-    'Foundations of Data Science': '22SPC302',
-    'Object Oriented Programming': '22SPC303',
-    'Engineering Exploration': '22SES308',
-    'Digital Systems Laboratory': '22SES309',
-    'Data Structures Laboratory': '22SPC304'
-  };
-
-  const faculty = {
-    'Probability,Statistics and Queuing Theory': 'Prof.N.Deepa,AP/Maths',
-    'Digital Systems': 'Prof.N.Arumugam,AP(Cont)/CSE',
-    'Discrete Structures': 'Prof.G.Poovila,AP(Cont)/CSE',
-    'Data Structures': 'Dr.R.Muthuram,ASP/CSE',
-    'Foundations of Data Science': 'Dr.S.Rathi,Prof/CSE',
-    'Object Oriented Programming': 'Prof.L.Sumathi,AP/CSE',
-    'Engineering Exploration': 'Prof.Gowri Shankar,AP/CSE,Prof.N.Ramya,AP(Cont)/CSE,Prof.P.Umarani,AP(HBL)/CSE',
-    'Digital Systems Laboratory': 'Prof.L.Sumathi,AP/CSE,Prof.N.Arumugam,AP(Cont)/CSE,Prof.P.Umarani,AP(HBL)/CSE,Prof.G.Poovila,AP(Cont)/CSE',
-    'Data Structures Laboratory': 'Dr.R.Muthuram,ASP/CSE,Dr.T.Rajasenbagam,AP/CSE,Prof.C.Gayathri,AP(Cont)/CSE,Prof.G.Poovila,AP(Cont)/CSE'
-  };
+ 
 
   const questions = [
     {
@@ -110,7 +89,7 @@ function Main({regNo, setRegNo, dob, setDob, isAuth, setIsAuth, stdName, setStdN
 
   useEffect(() => {
     const storedStudentId = localStorage.getItem("studentId");
-    console.log(storedStudentId); 
+    console.log(storedStudentId);
 
     if (storedStudentId) {
       const fetchStudentData = async () => {
@@ -125,6 +104,7 @@ function Main({regNo, setRegNo, dob, setDob, isAuth, setIsAuth, stdName, setStdN
               setStdName(studentData.stdName);
               setEmail(studentData.email);
               setPhNo(studentData.phNo);
+              setCourses(studentData.courselist);
               setRet(true);
               console.log(stdName);
             }
@@ -135,8 +115,8 @@ function Main({regNo, setRegNo, dob, setDob, isAuth, setIsAuth, stdName, setStdN
       };
 
       fetchStudentData();
-    } 
-  },[]);
+    }
+  }, []);
 
 
   const handleOptionChange = (id, question, selectedOption) => {
@@ -271,7 +251,7 @@ function Main({regNo, setRegNo, dob, setDob, isAuth, setIsAuth, stdName, setStdN
                 <div className='semOption'>
                   <Sem sem={sem} setSem={setSem} year={year} setYear={setYear} />
                 </div>
-                {sem === 'III' && <DropdownPart faculty={faculty}courseName={courseName} setCourseName={setCourseName} courses={courses} setCourseId={setCourseId} />}
+                {sem === 'V' && <DropdownPart courseName={courseName} courses={courses} setCourseName={setCourseName}  setCourseId={setCourseId} />}
 
 
                 <table className='table table-bordered table-striped'>
